@@ -1,18 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const {getAllUsers, createUser} = require('../../controllers/users/users')
+const {getAllUsers, createUser, getOneUser} = require('../../controllers/users/users')
 
 // Method GET
 // Desc get all users
 // Public
 router.get('/', getAllUsers);
 
+
+// @Params PASSWORD
 // Method GET
 // Desc get one user
 // Public
-router.get('/:id', (req,res) => console.log('get method users'));
+router.get('/:id', getOneUser);
 
-
+// @Params [NAME, EMAIL, PASSWORD]
 // Method POST
 // Desc create a new user
 // Public

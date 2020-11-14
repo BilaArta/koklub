@@ -14,7 +14,12 @@ app.use(bodyparser.json());
 //support parsing of application/x-www-form-urlencoded post data
 app.use(bodyparser.urlencoded({ extended: true }));
 
-mongoose.connect(process.env.DB_URI, {useNewUrlParser: true, useUnifiedTopology: true})
+mongoose.Promise = Promise;
+mongoose.connect(process.env.DB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true, 
+    useCreateIndex: true})
+
     .then(() => {
         console.log('connected to DB');
     })
