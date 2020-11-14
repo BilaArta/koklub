@@ -3,7 +3,16 @@ const bodyparser = require('body-parser')
 const mongoose = require('mongoose')
 require('dotenv').config()
 
+// import router
+const userRouter = require('./routes/users/users')
+
 const app = express()
+
+// support parsing of application/json type post data
+app.use(bodyparser.json());
+
+//support parsing of application/x-www-form-urlencoded post data
+app.use(bodyparser.urlencoded({ extended: true }));
 
 mongoose.connect(process.env.DB_URI, {useNewUrlParser: true, useUnifiedTopology: true})
     .then(() => {
@@ -12,6 +21,10 @@ mongoose.connect(process.env.DB_URI, {useNewUrlParser: true, useUnifiedTopology:
     .catch((err) => {
         console.log(err);
     });
+
+
+app.use('/users', userRouter)
+
 
 
 const PORT = process.env.PORT || 8000
