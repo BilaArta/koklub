@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {getAllUsers, createUser, getOneUser} = require('../../controllers/users/users')
+const {getAllUsers, createUser, getOneUser, editUser, deleteUser} = require('../../controllers/users/users')
 
 // Method GET
 // Desc get all users
@@ -24,12 +24,12 @@ router.post('/', createUser);
 // Method PUT
 // Desc edit a user
 // Private
-router.put('/:id', (req,res) => console.log('put method'));
+router.put('/:id', editUser);
 
 
 // Method DELETE
 // Desc delete a user
 // Private
-router.delete('/:id', (req,res) => console.log('delete method'));
+router.delete('/:id', deleteUser);
 
 module.exports = router;
