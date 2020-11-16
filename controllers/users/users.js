@@ -1,101 +1,98 @@
 const model = require('../../models/users/users')
+const ErrorResponse = require('../../utils/errorResponse')
+const asyncHandler = require('../../middleware/async');
 
 
-exports.getAllUsers = async (req,res) => {
-    try {
+
+exports.getAllUsers = asyncHandler( async (req,res, next) => {
         const users = await model.find()
-        res.status(200).send(users)
-    } catch (error) {
-        res.status(400).send(error)        
-    }
-}
-
-exports.getOneUser = async (req,res) => {
-    try {
-        let id = req.params.id
-        //test hasing password
-        let pass = req.body.password;
-        await model.findById(id, (err, user) => {
-            // console.log(user);
-            if(err) return res.status(400).send(err);
-            // test hasing password
-            user.comparePassword(pass, (err, isMatch) => {
-                if(err) return console.log(err);
-                // console.log(isMatch);
-                res.status(200).send({
-                    data : user,
-                    message : `password : ${isMatch}`
-                });
-            })
+        res
+            .status(200)
+            .json({
+                success: true,
+                count : users.length,
+                data : users
         })
-    } catch (error) {
-        res.status(400).send(error)
-    }
-}
+});
 
-exports.createUser = async (req,res) => {
-    try {
+exports.getOneUser = asyncHandler( async (req,res, next) => {
+        let id = req.params.id
+        const user = await model.findById({_id: id})
+        if(!user) return next(new ErrorResponse(`User not found with id :${req.params.id}`, 404))
+
+        res
+            .status(200)
+            .json({
+                success: true,
+                data: user
+            })
+})
+
+exports.createUser = asyncHandler( async (req,res, next) => {
         const data = req.body 
-        console.log(data);
-        await model.create(data, function (err, data) {
-            if (err){
-                console.log(err);
-                res.status(400).send(err)
-            }
-            res.status(201).send(`success create data user ${data.name}`);
-        });
-    } catch (error) {
-        res.status(401).send(error);
-    }
-}
+        
+        const user = await model.create(data);
+        if(!user) return next(new ErrorResponse('Error create new user', 400));
 
-exports.editUser = async (req,res) => {
-    try {
+        res
+            .status(200)
+            .json({
+                success: true,
+                data: user
+            })
+})
+
+exports.editUser = asyncHandler( async (req,res, next) => {
         const id = req.params.id
         var conditions = {
             _id : id
         }
-
         var update = req.body
+        const updateUser = await model.findOneAndUpdate(conditions, update)
+        if(!updateUser) return next(new ErrorResponse(`Error update user not found with id :${req.params.id}`, 404))
 
-        const updateUser = await model.findOneAndUpdate(conditions, update, (err,result) => {
-            if(err) {
-                return err
-            }else {
-                return result
-            }
-        })
+        res 
+            .status(200)
+            .json({
+                success: true,
+                data: updateUser
+            })
+})
 
-        if (!updateUser) {
-            res.status(400).send("error update user")
-        } else {
-            res.status(200).send("success update user")
-        }
+exports.deleteUser = asyncHandler( async (req,res,next) => {
 
-    } catch (error) {  
-        res.status(400).send(error)
-    }
-}
-
-exports.deleteUser = async (req,res) => {
-    try {
         var id = req.params.id
         var conditions = {
             _id : id
         }
-        const deleting = await model.deleteOne(conditions, (err) => {
-            if (err) {
-                return err
-            }
+        const user = await model.deleteOne(conditions)
+        if(user.deletedCount === 0) return next( new ErrorResponse(`Error delete user with id :${req.params.id}`, 404))
+
+        res
+            .status(200)
+            .json({
+                success: true,
+                data: user
+            })
+})
+
+exports.signIn = async (req,res) => {
+    try {
+        const {email, password} = req.body
+        const user = await model.findOne({email});
+        if (!user) return res.status(404).json({
+            status: false,
+            message: "User not found"
         })
 
-        if(!deleting) {
-            res.status(400).send(err)
-        }else {
-            res.status(200).send(`success delete user id : ${id}`)
-        }
-
+        const token = await user.getSignedToken();
+        res.status(200).json({
+            status: true,
+            user : user,
+            token : token
+        })
     } catch (error) {
-        res.status(400).send(error)
+        res.status(400).json(error)
     }
+
 }

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {getAllUsers, createUser, getOneUser, editUser, deleteUser} = require('../../controllers/users/users')
+const {getAllUsers, createUser, getOneUser, editUser, deleteUser, signIn} = require('../../controllers/users/users')
 
 // Method GET
 // Desc get all users
@@ -31,5 +31,7 @@ router.put('/:id', editUser);
 // Desc delete a user
 // Private
 router.delete('/:id', deleteUser);
+
+router.post('/signin', signIn);
 
 module.exports = router;

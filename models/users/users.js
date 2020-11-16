@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const {Schema} = mongoose;
 const bcrypt = require('bcrypt');
 const SALT_WORK_FACTOR = 10;
+const JWT = require('jsonwebtoken')
+require('dotenv').config()
 
 const userSchema = new Schema({
     name : {
@@ -19,7 +21,8 @@ const userSchema = new Schema({
     password : {
         type: String,
         required: true
-    }
+    },
+    token : String,
 }, {
     timestamps: { currentTime: () => Math.floor(Date.now() / 1000) }
 })
@@ -46,6 +49,12 @@ userSchema.methods.comparePassword = function(candidatePassword, cb) {
     bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
         if(err) return cb(err);
         cb(null, isMatch);
+    })
+}
+
+userSchema.methods.getSignedToken =  function(){
+    return JWT.sign({id: this._id}, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRE,
     })
 }
 

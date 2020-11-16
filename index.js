@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyparser = require('body-parser')
 const mongoose = require('mongoose')
+const errorHandler = require('./middleware/error')
 require('dotenv').config()
 
 // import router
@@ -30,8 +31,7 @@ mongoose.connect(process.env.DB_URI, {
 
 
 app.use('/users', userRouter)
-
-
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 8000
 
