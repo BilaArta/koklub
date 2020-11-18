@@ -1,7 +1,7 @@
 const model = require('../../models/users/users')
 const ErrorResponse = require('../../utils/errorResponse')
 const asyncHandler = require('../../middleware/async');
-
+require('dotenv').config()
 
 
 exports.getAllUsers = asyncHandler( async (req,res, next) => {
@@ -76,23 +76,45 @@ exports.deleteUser = asyncHandler( async (req,res,next) => {
             })
 })
 
-exports.signIn = async (req,res) => {
-    try {
+exports.signIn = asyncHandler( async (req,res, next) => {
         const {email, password} = req.body
+
         const user = await model.findOne({email});
-        if (!user) return res.status(404).json({
-            status: false,
-            message: "User not found"
-        })
+        if (!user) return next(new ErrorResponse(`User not found with email :${email}`, 404));
 
-        const token = await user.getSignedToken();
-        res.status(200).json({
-            status: true,
-            user : user,
-            token : token
+        const isMatch = await user.comparePassword(password, next);   
+        if(!isMatch) return next(new ErrorResponse('Error password', 401));
+
+        generateToken(user, 200, res);
+})
+
+exports.signout = asyncHandler( async (req,res, next) => {
+        res.cookie('token', 'none', {
+            expires: new Date(Date.now() + 10 * 1000),
+            httpOnly: true
         })
-    } catch (error) {
-        res.status(400).json(error)
+    
+        res 
+            .status(200)
+            .json({
+                success: true,
+                data: {}
+            })
+     
+})
+
+
+const generateToken = (user, statusCode, res) => {
+    const token = user.getSignedToken();
+    const options = {
+        expires : new Date(Date.now() + process.env.JWT_COOKIE_EXPIRE *24*60*60*1000 ),
+        httpOnly: true
     }
-
+    res
+        .status(200)
+        .cookie('token', token, options)
+        .json({
+            success: true,
+            token
+        })
 }

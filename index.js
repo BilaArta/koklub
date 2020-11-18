@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyparser = require('body-parser')
 const mongoose = require('mongoose')
+const cookieParser = require('cookie-parser')
 const errorHandler = require('./middleware/error')
 require('dotenv').config()
 
@@ -8,7 +9,7 @@ require('dotenv').config()
 const userRouter = require('./routes/users/users')
 
 const app = express()
-
+app.use(cookieParser())
 // support parsing of application/json type post data
 app.use(bodyparser.json());
 

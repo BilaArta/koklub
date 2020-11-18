@@ -45,15 +45,15 @@ userSchema.pre('save', function(next) {
     })
 })
 
-userSchema.methods.comparePassword = function(candidatePassword, cb) {
-    bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
-        if(err) return cb(err);
-        cb(null, isMatch);
-    })
+userSchema.methods.comparePassword =  function(candidatePassword, cb) {
+    const isMatch = bcrypt.compare(candidatePassword, this.password)
+    if(!isMatch) return cb('password dosen`t match');
+    
+    return isMatch
 }
 
 userSchema.methods.getSignedToken =  function(){
-    return JWT.sign({id: this._id}, process.env.JWT_SECRET, {
+    return JWT.sign({id: this._id, name: this.name}, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRE,
     })
 }
